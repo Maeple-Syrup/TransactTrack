@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TransactTrack</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="app relative" id="app">
+
+  <!-- LOGIN -->
+  <div class="login-wrap" id="login-page">
+    <div class="login-card">
+      <h1>TransactTrack</h1>
+      <p>Customer Transaction Tracker v1.0</p>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="login-user" placeholder="admin" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-pass" placeholder="••••••" />
+      </div>
+      <div id="login-err" class="err hidden"></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="doLogin()">Login</button>
+      <p class="hint">Demo: admin / admin123 &nbsp;|&nbsp; staff / staff123</p>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="main-app" class="hidden">
+    <div class="navbar">
+      <span class="nav-title">TransactTrack</span>
+      <div class="nav-links">
+        <button class="nav-link active" onclick="goPage('dashboard')">Dashboard</button>
+        <button class="nav-link" onclick="goPage('customers')">Customers</button>
+        <button class="nav-link" onclick="goPage('transactions')">Transactions</button>
+        <button class="nav-link" onclick="goPage('reports')">Reports</button>
+      </div>
+      <div class="nav-user">
+        <span id="nav-username"></span>
+        <button class="btn btn-sm" onclick="doLogout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-label">Project Completion Progress</div>
+      <div class="progress-phases">
+        <div class="phase done">&#10003; Phase 1: Login &amp; Auth (25%)</div>
+        <div class="phase done">&#10003; Phase 2: CRUD &amp; Customers (50%)</div>
+        <div class="phase done">&#10003; Phase 3: Transactions &amp; Search (75%)</div>
+        <div class="phase active">&#9658; Phase 4: Reports &amp; Analytics (100%)</div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="hidden">
+      <div class="stat-grid" id="dash-stats"></div>
+      <div class="section">
+        <div class="section-head">
+          <span class="section-title">Recent Transactions</span>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>Date</th><th>Customer</th><th>Category</th><th>Amount</th><th>Status</th>
+            </tr></thead>
+            <tbody id="dash-recent"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-head"><span class="section-title">Top Customers by Spending</span></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>Customer</th><th>Total Spent</th><th>Transactions</th><th>Avg / Txn</th>
+            </tr></thead>
+            <tbody id="dash-top-customers"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CUSTOMERS -->
+    <div id="page-customers" class="hidden">
+      <div class="section">
+        <div class="section-head">
+          <span class="section-title">Customers</span>
+          <button class="btn btn-primary btn-sm" onclick="openAddCustomer()">+ Add Customer</button>
+        </div>
+        <div class="search-row" style="margin-bottom:12px">
+          <input type="text" id="cust-search" placeholder="Search by name or email..." oninput="renderCustomers()" style="flex:1;min-width:160px" />
+          <select id="cust-filter-region" onchange="renderCustomers()">
+            <option value="">All Regions</option>
+            <option>North</option><option>South</option><option>East</option><option>West</option>
+          </select>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>Name</th><th>Email</th><th>Phone</th><th>Region</th><th>Joined</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="cust-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRANSACTIONS -->
+    <div id="page-transactions" class="hidden">
+      <div class="section">
+        <div class="section-head">
+          <span class="section-title">Transactions</span>
+          <button class="btn btn-primary btn-sm" onclick="openAddTxn()">+ Add Transaction</button>
+        </div>
+        <div class="search-row" style="margin-bottom:12px">
+          <input type="text" id="txn-search" placeholder="Search customer or note..." oninput="renderTxns()" style="flex:1;min-width:160px" />
+          <select id="txn-filter-status" onchange="renderTxns()">
+            <option value="">All Status</option>
+            <option>Completed</option><option>Pending</option><option>Failed</option>
+          </select>
+          <select id="txn-filter-cat" onchange="renderTxns()">
+            <option value="">All Categories</option>
+            <option>Purchase</option><option>Refund</option><option>Subscription</option><option>Service</option>
+          </select>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>Date</th><th>Customer</th><th>Category</th><th>Amount</th><th>Status</th><th>Note</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="txn-tbody"></tbody>
+          </table>
+        </div>
+        <p class="note">* Showing results based on current filters. Some edge cases might act a bit weird lol.</p>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div id="page-reports" class="hidden">
+      <div class="report-row">
+        <div class="agg-card">
+          <div class="agg-title">Aggregations — by Category</div>
+          <div id="agg-by-cat"></div>
+        </div>
+        <div class="agg-card">
+          <div class="agg-title">Aggregations — by Status</div>
+          <div id="agg-by-status"></div>
+        </div>
+      </div>
+      <div class="report-row">
+        <div class="agg-card">
+          <div class="agg-title">Aggregations — by Region</div>
+          <div id="agg-by-region"></div>
+        </div>
+        <div class="agg-card">
+          <div class="agg-title">Overall Totals (All Time)</div>
+          <div id="agg-overall"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><span class="section-title">JOIN Report — Customer + Transactions + Categories</span></div>
+        <p style="font-size:11px;color:#888;margin-bottom:10px">Simulates a 3-table JOIN: customers &rarr; transactions &rarr; categories.</p>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>Customer</th><th>Region</th><th>Category</th><th>Amount</th><th>Status</th><th>Date</th>
+            </tr></thead>
+            <tbody id="join-report-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><span class="section-title">Subquery Report — Customers Who Spent Above Average</span></div>
+        <p style="font-size:11px;color:#888;margin-bottom:10px">Uses 3 subqueries: (1) total per customer, (2) filter above avg, (3) get top category.</p>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>Customer</th><th>Region</th><th>Total Spent</th><th>Transactions</th><th>Top Category</th>
+            </tr></thead>
+            <tbody id="subquery-report-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><span class="section-title">CTE Report — Monthly Transaction Summary</span></div>
+        <p style="font-size:11px;color:#888;margin-bottom:10px">Simulates a CTE: groups by month, then adds running totals.</p>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>Month</th><th>Total Revenue</th><th>Transactions</th><th>Avg per Txn</th><th>Running Total</th>
+            </tr></thead>
+            <tbody id="cte-report-body"></tbody>
+          </table>
+        </div>
+        <p class="note">Note: In a real SQL DB, this uses WITH monthly_data AS (...) SELECT ...</p>
+      </div>
+    </div>
+
+  </div><!-- end main-app -->
+
+  <!-- MODAL: Customer -->
+  <div id="modal-cust" class="hidden">
+    <div class="modal-bg">
+      <div class="modal">
+        <h2 id="modal-cust-title">Add Customer</h2>
+        <div class="form-group"><label>Full Name</label><input type="text" id="cust-name" /></div>
+        <div class="form-group"><label>Email</label><input type="email" id="cust-email" /></div>
+        <div class="form-group"><label>Phone</label><input type="text" id="cust-phone" /></div>
+        <div class="form-group">
+          <label>Region</label>
+          <select id="cust-region">
+            <option>North</option><option>South</option><option>East</option><option>West</option>
+          </select>
+        </div>
+        <div id="cust-err" class="err hidden"></div>
+        <div class="modal-actions">
+          <button class="btn btn-sm" onclick="closeModal('modal-cust')">Cancel</button>
+          <button class="btn btn-primary btn-sm" onclick="saveCustomer()">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Transaction -->
+  <div id="modal-txn" class="hidden">
+    <div class="modal-bg">
+      <div class="modal">
+        <h2 id="modal-txn-title">Add Transaction</h2>
+        <div class="form-group"><label>Customer</label><select id="txn-customer-id"></select></div>
+        <div class="form-group"><label>Amount (&#8369;)</label><input type="number" id="txn-amount" min="0" step="0.01" /></div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="txn-category">
+            <option>Purchase</option><option>Refund</option><option>Subscription</option><option>Service</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="txn-status">
+            <option>Completed</option><option>Pending</option><option>Failed</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Date</label><input type="date" id="txn-date" /></div>
+        <div class="form-group"><label>Note</label><input type="text" id="txn-note" placeholder="Optional note..." /></div>
+        <div id="txn-err" class="err hidden"></div>
+        <div class="modal-actions">
+          <button class="btn btn-sm" onclick="closeModal('modal-txn')">Cancel</button>
+          <button class="btn btn-primary btn-sm" onclick="saveTxn()">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end app -->
+
+<script src="app.js"></script>
+</body>
+</html>
