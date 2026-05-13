@@ -1,0 +1,4 @@
+TransactTrack - Advanced Database Systems Final Project
+GitHub Repository: https://github.com/Maeple-Syrup/TransactTrack
+Submitted by: BADILLA, KENNETH REEVES C.
+Course: Advanced Database Systems
